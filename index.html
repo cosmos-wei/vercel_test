@@ -1,349 +1,252 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bauhaus Clock</title>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            min-height: 100vh;
-            background: #f5f5f5;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+        /* Dashboard Layout */
+        .dashboard {
             display: grid;
-            grid-template-columns: 200px 400px 200px;
-            grid-template-rows: 100px 400px 150px;
-            gap: 0;
-            max-width: 800px;
-            margin: 50px auto;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
         }
 
-        /* 几何装饰区 */
-        .geo-top {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-            background: #c41e3a;
+        .dashboard-full {
+            grid-column: 1 / -1;
+        }
+
+        .dashboard-half {
+            grid-column: span 2;
+        }
+
+        .dashboard-three {
+            grid-column: span 3;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            margin-bottom: var(--space-4);
+        }
+
+        .table-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+            margin-bottom: var(--space-4);
         }
 
-        .geo-top::after {
-            content: '';
-            width: 60px;
-            height: 60px;
-            background: #f5f5f5;
-        }
-
-        .geo-left {
-            grid-column: 1 / 2;
-            grid-row: 2 / 4;
-            background: #0047ab;
+        .table-actions {
             display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 40px;
+            gap: var(--space-2);
         }
 
-        .geo-left::after {
-            content: '';
-            width: 0;
-            height: 0;
-            border-left: 40px solid transparent;
-            border-right: 40px solid transparent;
-            border-bottom: 70px solid #f5f5f5;
+        .search-input {
+            width: 18rem;
         }
 
-        .clock-container {
-            grid-column: 2 / 3;
-            grid-row: 1 / 3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #ffffff;
-            border: 2px solid #1a1a1a;
+        /* Chart Grid */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-6);
         }
 
-        canvas {
-            display: block;
+        /* Progress Cards */
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-6);
         }
 
-        .geo-right {
-            grid-column: 3 / 4;
-            grid-row: 1 / 4;
-            background: #ffc72c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .dashboard-half, .dashboard-three {
+                grid-column: span 1;
+            }
+            .chart-grid, .progress-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .geo-right::before {
-            content: '';
-            width: 80px;
-            height: 80px;
-            border: 8px solid #1a1a1a;
-        }
-
-        .geo-bottom-left {
-            grid-column: 1 / 2;
-            grid-row: 4 / 5;
-            background: #1a1a1a;
-        }
-
-        .geo-bottom-right {
-            grid-column: 2 / 4;
-            grid-row: 4 / 5;
-            background: #808080;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .geo-bottom-right::after {
-            content: 'STAHL';
-            color: #ffffff;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 8px;
-        }
-
-        /* 时钟标题 */
-        .clock-title {
-            margin-top: 20px;
-            color: #1a1a1a;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-        }
-
-        /* 日期显示 */
-        .date-display {
-            margin-top: 10px;
-            color: #808080;
-            font-size: 11px;
-            letter-spacing: 2px;
-        }
-
-        /* 装饰线条 */
-        .divider {
-            position: fixed;
-            background: #1a1a1a;
-        }
-
-        .divider-v {
-            width: 2px;
-            height: 100vh;
-        }
-
-        .divider-h {
-            height: 2px;
-            width: 100vw;
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .table-actions {
+                flex-direction: column;
+            }
+            .search-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 包豪斯几何构成 -->
-    <div class="geo-top"></div>
-    <div class="geo-left"></div>
+    <shadcn-layout id="layout">
+        <shadcn-sidebar slot="sidebar" id="sidebar"></shadcn-sidebar>
+        <shadcn-topbar slot="topbar" id="topbar"></shadcn-topbar>
+        <shadcn-main slot="main">
+            <div id="app"></div>
+        </shadcn-main>
+    </shadcn-layout>
 
-    <div class="clock-container">
-        <canvas id="clock"></canvas>
-        <div class="clock-title">BAUHAUS</div>
-        <div class="date-display" id="date"></div>
-    </div>
+    <script type="module">
+        import { LitElement, html, css } from 'https://cdn.jsdelivr.net/npm/lit@3.1.0/+esm';
+        import './components/basic.js';
+        import './components/layout.js';
+        import './components/data.js';
 
-    <div class="geo-right"></div>
-    <div class="geo-bottom-left"></div>
-    <div class="geo-bottom-right"></div>
+        // Mock Data
+        const statsData = [
+            { title: 'Total Revenue', value: '$48,256', change: '+12.5%', changeType: 'positive' },
+            { title: 'Active Users', value: '2,453', change: '+8.2%', changeType: 'positive' },
+            { title: 'New Orders', value: '348', change: '-3.1%', changeType: 'negative' },
+            { title: 'Conversion Rate', value: '3.24%', change: '+2.4%', changeType: 'positive' }
+        ];
 
-    <script>
-        const canvas = document.getElementById('clock');
-        const ctx = canvas.getContext('2d');
+        const chartData = [
+            { label: 'Mon', value: 4200 },
+            { label: 'Tue', value: 3800 },
+            { label: 'Wed', value: 5100 },
+            { label: 'Thu', value: 4600 },
+            { label: 'Fri', value: 6200 },
+            { label: 'Sat', value: 5800 },
+            { label: 'Sun', value: 4900 }
+        ];
 
-        const SIZE = 320;
-        const CENTER = SIZE / 2;
-        const RADIUS = SIZE / 2 - 16;
+        const tableColumns = [
+            { key: 'id', label: 'ID' },
+            { key: 'customer', label: 'Customer' },
+            { key: 'product', label: 'Product' },
+            { key: 'amount', label: 'Amount',
+                render: (val) => `$${val.toLocaleString()}` },
+            { key: 'status', label: 'Status',
+                render: (val) => {
+                    const variants = {
+                        'completed': 'success',
+                        'pending': 'warning',
+                        'cancelled': 'destructive'
+                    };
+                    return `<shadcn-badge variant="${variants[val] || 'outline'}">${val}</shadcn-badge>`;
+                }
+            },
+            { key: 'date', label: 'Date' }
+        ];
 
-        canvas.width = SIZE;
-        canvas.height = SIZE;
+        const tableData = [
+            { id: '#1001', customer: 'John Doe', product: 'Premium Plan', amount: 299, status: 'completed', date: '2024-01-15' },
+            { id: '#1002', customer: 'Jane Smith', product: 'Basic Plan', amount: 99, status: 'pending', date: '2024-01-15' },
+            { id: '#1003', customer: 'Bob Wilson', product: 'Enterprise', amount: 599, status: 'completed', date: '2024-01-14' },
+            { id: '#1004', customer: 'Alice Brown', product: 'Premium Plan', amount: 299, status: 'cancelled', date: '2024-01-14' },
+            { id: '#1005', customer: 'Charlie Davis', product: 'Basic Plan', amount: 99, status: 'completed', date: '2024-01-13' },
+            { id: '#1006', customer: 'Eva Martinez', product: 'Premium Plan', amount: 299, status: 'pending', date: '2024-01-13' },
+            { id: '#1007', customer: 'Frank Garcia', product: 'Enterprise', amount: 599, status: 'completed', date: '2024-01-12' },
+            { id: '#1008', customer: 'Grace Lee', product: 'Basic Plan', amount: 99, status: 'completed', date: '2024-01-12' }
+        ];
 
-        // 包豪斯配色
-        const COLORS = {
-            primary: '#c41e3a',    // 红
-            secondary: '#0047ab',  // 蓝
-            accent: '#ffc72c',     // 黄
-            black: '#1a1a1a',
-            gray: '#808080',
-            white: '#ffffff'
-        };
+        const sidebarItems = [
+            { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+            { id: 'orders', label: 'Orders', icon: 'orders' },
+            { id: 'products', label: 'Products', icon: 'products' },
+            { id: 'users', label: 'Users', icon: 'users' },
+            { id: 'analytics', label: 'Analytics', icon: 'analytics' },
+            { id: 'settings', label: 'Settings', icon: 'settings' }
+        ];
 
-        function drawClock() {
-            const now = new Date();
-            const hours = now.getHours() % 12;
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            const milliseconds = now.getMilliseconds();
+        // Main App Component
+        class DashboardApp extends LitElement {
+            static styles = css`:host { display: block; }`;
 
-            const smoothSeconds = seconds + milliseconds / 1000;
+            render() {
+                return html`
+                    <!-- Stats Cards -->
+                    <div class="dashboard">
+                        ${statsData.map(stat => html`
+                            <shadcn-stat-card
+                                title="${stat.title}"
+                                value="${stat.value}"
+                                change="${stat.change}"
+                                change-type="${stat.changeType}"
+                            >
+                                <span slot="icon">${stat.title.charAt(0)}</span>
+                            </shadcn-stat-card>
+                        `)}
+                    </div>
 
-            // 清空
-            ctx.fillStyle = COLORS.white;
-            ctx.fillRect(0, 0, SIZE, SIZE);
+                    <!-- Charts Section -->
+                    <div class="dashboard">
+                        <div class="dashboard-three">
+                            <h3 class="section-title">Revenue Overview</h3>
+                            <shadcn-bar-chart
+                                .data="${chartData}"
+                                height="220"
+                            ></shadcn-bar-chart>
+                        </div>
+                        <div class="dashboard-half">
+                            <h3 class="section-title">Goals Progress</h3>
+                            <div class="progress-grid" style="grid-template-columns: 1fr;">
+                                <shadcn-progress value="75" color="primary">Monthly Target</shadcn-progress>
+                                <shadcn-progress value="60" color="primary">Quarterly Goal</shadcn-progress>
+                                <shadcn-progress value="85" color="primary">Annual Target</shadcn-progress>
+                            </div>
+                        </div>
+                    </div>
 
-            drawDecorativeRings();
-            drawMarkers();
-            drawHands(hours, minutes, smoothSeconds);
-            drawCenter();
+                    <!-- Table Section -->
+                    <div class="dashboard dashboard-full">
+                        <div class="table-header">
+                            <h3 class="section-title" style="margin: 0;">Recent Orders</h3>
+                            <div class="table-actions">
+                                <shadcn-input class="search-input" placeholder="Search orders..."></shadcn-input>
+                                <shadcn-button variant="outline">Filter</shadcn-button>
+                                <shadcn-button>Export</shadcn-button>
+                            </div>
+                        </div>
+                        <shadcn-table
+                            .columns="${tableColumns}"
+                            .data="${tableData}"
+                            selectable
+                        ></shadcn-table>
+                    </div>
+                `;
+            }
+        }
 
-            // 更新日期
-            document.getElementById('date').textContent = now.toLocaleDateString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
+        customElements.define('dashboard-app', DashboardApp);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.items = sidebarItems;
+            sidebar.activeItem = 'dashboard';
+
+            const topbar = document.getElementById('topbar');
+            topbar.title = 'Dashboard';
+            topbar.breadcrumbs = ['Home', 'Dashboard'];
+
+            document.getElementById('app').innerHTML = '<dashboard-app></dashboard-app>';
+
+            sidebar.addEventListener('nav-change', (e) => {
+                const id = e.detail.itemId;
+                topbar.title = id.charAt(0).toUpperCase() + id.slice(1);
+                topbar.breadcrumbs = ['Home', id.charAt(0).toUpperCase() + id.slice(1)];
             });
 
-            requestAnimationFrame(drawClock);
-        }
-
-        function drawDecorativeRings() {
-            // 外框
-            ctx.beginPath();
-            ctx.arc(CENTER, CENTER, RADIUS, 0, Math.PI * 2);
-            ctx.strokeStyle = COLORS.black;
-            ctx.lineWidth = 10;
-            ctx.stroke();
-
-            // 内圈 - 三色弧
-            ctx.beginPath();
-            ctx.arc(CENTER, CENTER, RADIUS - 35, -Math.PI / 2, 0);
-            ctx.strokeStyle = COLORS.primary;
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(CENTER, CENTER, RADIUS - 42, 0, Math.PI / 2);
-            ctx.strokeStyle = COLORS.secondary;
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(CENTER, CENTER, RADIUS - 49, Math.PI / 2, Math.PI);
-            ctx.strokeStyle = COLORS.accent;
-            ctx.lineWidth = 4;
-            ctx.stroke();
-        }
-
-        function drawMarkers() {
-            // 小时刻度
-            for (let i = 0; i < 12; i++) {
-                const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
-                const innerRadius = RADIUS - 30;
-                const outerRadius = RADIUS - 8;
-
-                const x1 = CENTER + Math.cos(angle) * innerRadius;
-                const y1 = CENTER + Math.sin(angle) * innerRadius;
-                const x2 = CENTER + Math.cos(angle) * outerRadius;
-                const y2 = CENTER + Math.sin(angle) * outerRadius;
-
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = COLORS.black;
-                ctx.lineWidth = 3;
-                ctx.lineCap = 'square';
-                ctx.stroke();
-            }
-
-            // 分钟刻度
-            for (let i = 0; i < 60; i++) {
-                if (i % 5 === 0) continue;
-                const angle = (i / 60) * Math.PI * 2 - Math.PI / 2;
-                const innerRadius = RADIUS - 20;
-                const outerRadius = RADIUS - 8;
-
-                const x1 = CENTER + Math.cos(angle) * innerRadius;
-                const y1 = CENTER + Math.sin(angle) * innerRadius;
-                const x2 = CENTER + Math.cos(angle) * outerRadius;
-                const y2 = CENTER + Math.sin(angle) * outerRadius;
-
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.strokeStyle = COLORS.gray;
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            }
-
-            // 小时数字
-            ctx.fillStyle = COLORS.black;
-            ctx.font = 'bold 16px Helvetica Neue, Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            for (let i = 1; i <= 12; i++) {
-                const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
-                const x = CENTER + Math.cos(angle) * (RADIUS - 50);
-                const y = CENTER + Math.sin(angle) * (RADIUS - 50);
-                ctx.fillText(i.toString(), x, y);
-            }
-        }
-
-        function drawHands(hours, minutes, seconds) {
-            // 时针（红）
-            const hourAngle = (hours / 12) * Math.PI * 2 + (minutes / 60) * (Math.PI * 2 / 12) - Math.PI / 2;
-            drawHand(hourAngle, RADIUS - 80, 8, COLORS.primary, true);
-
-            // 分针（蓝）
-            const minuteAngle = (minutes / 60) * Math.PI * 2 + (seconds / 60) * (Math.PI * 2 / 60) - Math.PI / 2;
-            drawHand(minuteAngle, RADIUS - 50, 5, COLORS.secondary, true);
-
-            // 秒针（黄）
-            const secondAngle = (seconds / 60) * Math.PI * 2 - Math.PI / 2;
-            drawHand(secondAngle, RADIUS - 30, 2, COLORS.accent, false, true);
-        }
-
-        function drawHand(angle, length, width, color, isRect, hasCounterweight = false) {
-            ctx.save();
-            ctx.translate(CENTER, CENTER);
-            ctx.rotate(angle);
-
-            ctx.beginPath();
-            if (isRect) {
-                ctx.rect(-8, -width / 2, length + 8, width);
-            } else {
-                ctx.moveTo(-15, 0);
-                ctx.lineTo(length, 0);
-            }
-
-            ctx.strokeStyle = color;
-            ctx.lineWidth = width;
-            ctx.lineCap = 'square';
-            ctx.stroke();
-
-            if (hasCounterweight) {
-                ctx.beginPath();
-                ctx.arc(-15, 0, 6, 0, Math.PI * 2);
-                ctx.fillStyle = color;
-                ctx.fill();
-            }
-
-            ctx.restore();
-        }
-
-        function drawCenter() {
-            ctx.beginPath();
-            ctx.arc(CENTER, CENTER, 5, 0, Math.PI * 2);
-            ctx.fillStyle = COLORS.primary;
-            ctx.fill();
-        }
-
-        drawClock();
+            document.getElementById('layout').addEventListener('menu-toggle', () => {
+                sidebar.collapsed = !sidebar.collapsed;
+            });
+        });
     </script>
 </body>
 </html>
